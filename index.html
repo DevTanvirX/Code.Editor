@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Code Editor</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #1e1e1e;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+    }
+    #header {
+      background-color: #333;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #ffffff;
+    }
+    #header h1 {
+      margin: 0;
+    }
+    #controls {
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background-color: #007acc;
+      border: none;
+      padding: 10px 20px;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background-color: #005f9e;
+    }
+    #editor-container {
+      height: 85vh;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header">
+    <h1>Python Code Editor</h1>
+    <div id="controls">
+      <button onclick="saveCode()"><i class="fas fa-save"></i> Save</button>
+    </div>
+  </div>
+
+  <div id="editor-container"></div>
+
+  <!-- Monaco Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs/loader.min.js"></script>
+  <script>
+    let editor;
+
+    // Function to load code from localStorage
+    function loadCode() {
+      const savedCode = localStorage.getItem('pythonCode');
+      return savedCode ? savedCode : '# Write Python code here...\n';
+    }
+
+    // Monaco Editor setup
+    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.21.2/min/vs' } });
+    require(['vs/editor/editor.main'], function() {
+      editor = monaco.editor.create(document.getElementById('editor-container'), {
+        value: loadCode(),
+        language: 'python',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        quickSuggestions: { other: true, comments: true, strings: true },
+        wordBasedSuggestions: true
+      });
+
+      // Register all Python keywords, functions, and libraries
+      monaco.languages.registerCompletionItemProvider('python', {
+        provideCompletionItems: () => {
+          const suggestions = [
+            // Python Keywords
+            { label: 'False', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'False' },
+            { label: 'None', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'None' },
+            { label: 'True', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'True' },
+            { label: 'and', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'and' },
+            { label: 'as', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'as' },
+            { label: 'assert', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'assert' },
+            { label: 'break', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'break' },
+            { label: 'class', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'class ${1:ClassName}:\n\tdef __init__(self, ${2:args}):\n\t\t' },
+            { label: 'continue', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'continue' },
+            { label: 'def', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'def ${1:function_name}(${2:args}):\n\t', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'del', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'del ' },
+            { label: 'elif', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'elif ${1:condition}:\n\t' },
+            { label: 'else', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'else:\n\t' },
+            { label: 'except', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'except ${1:ExceptionType} as ${2:e}:\n\t' },
+            { label: 'finally', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'finally:\n\t' },
+            { label: 'for', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'for ${1:var} in ${2:iterable}:\n\t', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'if', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'if ${1:condition}:\n\t', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'import', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'import ' },
+            { label: 'in', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'in' },
+            { label: 'is', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'is' },
+            { label: 'lambda', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'lambda ' },
+            { label: 'not', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'not' },
+            { label: 'or', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'or' },
+            { label: 'pass', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'pass' },
+            { label: 'raise', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'raise ${1:ExceptionName}(${2:message})', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'return', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'return ' },
+            { label: 'try', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'try:\n\t', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'while', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'while ${1:condition}:\n\t', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'with', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'with ' },
+            { label: 'yield', kind: monaco.languages.CompletionItemKind.Keyword, insertText: 'yield ' },
+
+            // Python Built-in Functions
+            { label: 'print', kind: monaco.languages.CompletionItemKind.Function, insertText: 'print', documentation: 'Print the specified object(s) to the console', insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet },
+            { label: 'abs', kind: monaco.languages.CompletionItemKind.Function, insertText: 'abs(${1:x})', documentation: 'Return the absolute value of a number' },
+            { label: 'all', kind: monaco.languages.CompletionItemKind.Function, insertText: 'all(${1:iterable})', documentation: 'Return True if all elements of the iterable are true' },
+            { label: 'any', kind: monaco.languages.CompletionItemKind.Function, insertText: 'any(${1:iterable})', documentation: 'Return True if any element of the iterable is true' },
+            { label: 'bin', kind: monaco.languages.CompletionItemKind.Function, insertText: 'bin(${1:x})', documentation: 'Convert an integer number to a binary string' },
+            { label: 'bool', kind: monaco.languages.CompletionItemKind.Function, insertText: 'bool(${1:x})', documentation: 'Return a boolean value' },
+            { label: 'chr', kind: monaco.languages.CompletionItemKind.Function, insertText: 'chr(${1:i})', documentation: 'Return the string representing a character' },
+            { label: 'dir', kind: monaco.languages.CompletionItemKind.Function, insertText: 'dir(${1:object})', documentation: 'Return a list of attributes of the object' },
+            { label: 'divmod', kind: monaco.languages.CompletionItemKind.Function, insertText: 'divmod(${1:a}, ${2:b})', documentation: 'Return the quotient and remainder of division' },
+            { label: 'enumerate', kind: monaco.languages.CompletionItemKind.Function, insertText: 'enumerate(${1:iterable}, start=${2:0})', documentation: 'Return an enumerate object' },
+            { label: 'filter', kind: monaco.languages.CompletionItemKind.Function, insertText: 'filter(${1:function}, ${2:iterable})', documentation: 'Filter elements from the iterable' },
+            { label: 'float', kind: monaco.languages.CompletionItemKind.Function, insertText: 'float(${1:x})', documentation: 'Convert a number or string to a floating point number' },
+            { label: 'input', kind: monaco.languages.CompletionItemKind.Function, insertText: 'input(${1:prompt})', documentation: 'Read a string from standard input' },
+            { label: 'int', kind: monaco.languages.CompletionItemKind.Function, insertText: 'int(${1:x})', documentation: 'Convert a number or string to an integer' },
+
+            // Python Libraries
+            { label: 'import os', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import os', documentation: 'Provides functions to interact with the operating system' },
+            { label: 'import sys', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import sys', documentation: 'Provides access to interpreter variables and functions' },
+            { label: 'import json', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import json', documentation: 'Provides methods to work with JSON data' },
+            { label: 'import math', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import math', documentation: 'Provides mathematical functions' },
+            { label: 'import random', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import random', documentation: 'Provides methods to generate random numbers' },
+            { label: 'import datetime', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import datetime', documentation: 'Supplies classes for manipulating dates and times' },
+            { label: 'import time', kind: monaco.languages.CompletionItemKind.Module, insertText: 'import time', documentation: 'Provides time-related functions' }
+          ];
+          return { suggestions: suggestions };
+        }
+      });
+
+      // Load saved code from localStorage on initialization
+      editor.setValue(loadCode());
+      
+      // Update localStorage with the editor value on input
+      editor.onDidChangeModelContent(() => {
+        localStorage.setItem('pythonCode', editor.getValue());
+      });
+    });
+
+    // Save code to file
+    function saveCode() {
+      const code = editor.getValue();
+      const blob = new Blob([code], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'code.py';  // Save as .py file
+      link.click();
+    }
+  </script>
+
+</body>
+</html>
